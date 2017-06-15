@@ -8,6 +8,7 @@ from kivy.properties import NumericProperty, ReferenceListProperty,\
 from kivy.vector import Vector
 from kivy.clock import Clock
 from random import randint
+from kivy.core.window import Window
 
 
 class PongBall(Widget):
@@ -34,7 +35,15 @@ class PongGame(Widget):
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
 
-    #May need to update
+    def __init__(self, **kwargs):
+        super(PongGame, self).__init__(**kwargs)
+        self.keyboard = Window.request_keyboard(self.keyboard_closed, self)
+        self.keyboard.bind(on_key_down=self.on_keyboard_down)
+
+    def keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self.on_keyboard_down)
+        self._keyboard = None
+	
     def serve_ball(self, vel=(4,0)):
         self.ball.center = self.center
         self.ball.velocity = vel #Vector(4, 0).rotate(randint(0, 360))
@@ -61,6 +70,19 @@ class PongGame(Widget):
         if touch.x > self.width - self.width / 3:
             self.player2.center_y = touch.y
 
+    #TODO: add additional condition to prevent paddles from moving off screen
+    def on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'up':
+            self.player2.center_y += 20
+        elif keycode[1] == 'down':
+            self.player2.center_y -= 20
+        elif keycode[1] == 'w':
+            self.player1.center_y += 20
+        elif keycode[1] == 's':
+            self.player1.center_y -= 20
+
+        return True
+		
 
 class PongApp(App):
 
